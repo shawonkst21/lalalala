@@ -39,7 +39,7 @@ public class About implements Screen {
             game.batch.draw(back2, button5X, button5Y, button5Width, button5Height);// Draw hover state texture
             if(Gdx.input.isTouched())
             {
-                game.setScreen(new Menu(game));
+                game.setScreen(new Menu1(game));
 
             }
         } else {

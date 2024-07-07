@@ -46,7 +46,7 @@ public class FirstScreen implements Screen {
     int percentage = (int) (loadingProgress * 100);
     if(percentage==100)
     {
-      game.setScreen(new Menu(game));
+      game.setScreen(new Menu1(game));
     }
 
     // Draw the loading bar

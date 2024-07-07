@@ -17,8 +17,8 @@ public class Instruction implements Screen {
     {
         this.game=game;
         pic=new Texture("Instruction.png");
-        back3=new Texture("backButon.png");
-        back4=new Texture("backButon2.png");
+        back3=new Texture("insBack.png");
+        back4=new Texture("insBackAC.png");
     }
     @Override
     public void show() {
@@ -28,9 +28,9 @@ public class Instruction implements Screen {
     @Override
     public void render(float v) {
         ScreenUtils.clear(0, 0, 0, 0);
-        int button5X = 11;
-        int button5Y = 651;
-        int button5Width = 135;
+        int button5X = 14;
+        int button5Y = 654;
+        int button5Width = 151;
         int button5Height = 56;
 
         boolean isBack = Gdx.input.getX() >= button5X && Gdx.input.getX() <= button5X + button5Width &&
@@ -38,14 +38,14 @@ public class Instruction implements Screen {
         game.batch.begin();
         game.batch.draw(pic,0,0);
         if (isBack) {
-            game.batch.draw(back3, button5X, button5Y, button5Width, button5Height);// Draw hover state texture
+            game.batch.draw(back4, button5X, button5Y, button5Width, button5Height);// Draw hover state texture
             if(Gdx.input.isTouched())
             {
-                game.setScreen(new Menu(game));
+                game.setScreen(new Menu1(game));
 
             }
         } else {
-            game.batch.draw(back4, button5X, button5Y, button5Width, button5Height); // Draw normal texture
+            game.batch.draw(back3, button5X, button5Y, button5Width, button5Height); // Draw normal texture
         }
         game.batch.end();
 
