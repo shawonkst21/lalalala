@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.MyGdxGame;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class gameScreen3 implements Screen {
+    public static BitmapFont sfont;
+
     MyGdxGame game;
     float x, y;
     int score;
@@ -41,8 +45,8 @@ public class gameScreen3 implements Screen {
         for (int i = 0; i < 5; i++) {
             float startX = MyGdxGame.WIDTH + MathUtils.random(200, 400); // Start off-screen to the right
             float startY = MathUtils.random(0, MyGdxGame.HEIGHT - 100); // Random Y position
-            float enemySpeed = MathUtils.random(150, 250); // Adjusted enemy speed
-            enemies.add(new Enemy(startX, startY, enemySpeed));
+            //float enemySpeed = MathUtils.random(150, 250); // Adjusted enemy speed
+            enemies.add(new Enemy(startX, startY, 200));
         }
 
         // Initialize projectiles lists
@@ -51,6 +55,8 @@ public class gameScreen3 implements Screen {
 
         // Load background texture
         img = new Texture("BG.jpg");
+        sfont = new BitmapFont(Gdx.files.internal("font/score.fnt")); // Initialize the font with the correct path
+
     }
 
     @Override
@@ -130,7 +136,7 @@ public class gameScreen3 implements Screen {
 
         // Draw enemy projectiles
         for (Projectile projectile : projectiles) {
-            game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 60, 40);
+            game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 50, 30);
         }
 
         // Draw ship projectiles
@@ -138,16 +144,15 @@ public class gameScreen3 implements Screen {
             game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 70, 50);
         }
 
-        // Draw score and health
-       // game.font.draw(game.batch, "Score: " + score, 10, MyGdxGame.HEIGHT - 10);
-        //game.font.draw(game.batch, "Health: " + health, 10, MyGdxGame.HEIGHT - 30);
 
+        GlyphLayout scoreLayout = new GlyphLayout(sfont, "Score: " + score);
+        sfont.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 300, MyGdxGame.HEIGHT - 50);
         game.batch.end();
     }
 
     private void checkCollisions() {
         // Create rectangles for the ship and enemies
-        Rectangle shipRect = new Rectangle(x, y, ship.getWidth(), ship.getHeight());
+        Rectangle shipRect = new Rectangle(x, y, ship.getWidth()-50, ship.getHeight()-50);
 
         Iterator<Enemy> enemyIterator = enemies.iterator();
         while (enemyIterator.hasNext()) {
@@ -171,7 +176,7 @@ public class gameScreen3 implements Screen {
             Iterator<Projectile> enemyProjectileIterator = projectiles.iterator();
             while (enemyProjectileIterator.hasNext()) {
                 Projectile projectile = enemyProjectileIterator.next();
-                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth(), projectileTexture.getHeight());
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth()-100, projectileTexture.getHeight()-70);
                 if (projectileRect.overlaps(shipRect)) {
                     enemyProjectileIterator.remove();
                     health--;
