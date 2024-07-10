@@ -24,6 +24,7 @@ public class gameScreen3 implements Screen {
     Texture ship = new Texture("ship.png");
     static Texture enemyTexture = new Texture("alien.png");
     static Texture projectileTexture = new Texture("fire.png");
+    Texture healthKitTexture = new Texture("dot.png"); // Load the texture for the health kit
 
     float bg_x1 = 0, bg_x2 = 1280;
     int bg_speed = 6; // Adjusted background speed
@@ -32,20 +33,20 @@ public class gameScreen3 implements Screen {
     ArrayList<Enemy> enemies;
     static ArrayList<Projectile> projectiles;
     static ArrayList<Projectile> shipProjectiles;
+    ArrayList<HealthKit> healthKits = new ArrayList<>(); // List of health kits
 
     public gameScreen3(MyGdxGame game) {
         this.game = game;
         x = 30;
         y = MyGdxGame.HEIGHT / 2f - 100f;
         score = 0;
-        health = 3; // Starting health
+        health = 30; // Starting health
 
         // Initialize enemies
         enemies = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             float startX = MyGdxGame.WIDTH + MathUtils.random(200, 400); // Start off-screen to the right
             float startY = MathUtils.random(0, MyGdxGame.HEIGHT - 100); // Random Y position
-            //float enemySpeed = MathUtils.random(150, 250); // Adjusted enemy speed
             enemies.add(new Enemy(startX, startY, 200));
         }
 
@@ -56,12 +57,11 @@ public class gameScreen3 implements Screen {
         // Load background texture
         img = new Texture("BG.jpg");
         sfont = new BitmapFont(Gdx.files.internal("font/score.fnt")); // Initialize the font with the correct path
-
+        sfont.getData().setScale(.8f);
     }
 
     @Override
     public void show() {
-
     }
 
     @Override
@@ -108,6 +108,15 @@ public class gameScreen3 implements Screen {
             }
         }
 
+        // Update health kits
+        for (int i = healthKits.size() - 1; i >= 0; i--) {
+            HealthKit healthKit = healthKits.get(i);
+            healthKit.update(delta);
+            if (healthKit.x + healthKitTexture.getWidth() < 0) {
+                healthKits.remove(i);
+            }
+        }
+
         // Check for collisions
         checkCollisions();
 
@@ -121,6 +130,13 @@ public class gameScreen3 implements Screen {
         }
         if (bg_x2 + img.getWidth() <= 0) {
             bg_x2 = bg_x1 + img.getWidth();
+        }
+
+        // Check if score is a multiple of 10 and add health kit
+        if (score % 10 == 0 && score != 0 && !healthKits.stream().anyMatch(kit -> kit.x > 0)) {
+            float healthKitX = MyGdxGame.WIDTH;
+            float healthKitY = MathUtils.random(0, MyGdxGame.HEIGHT - 50); // Random Y position
+            healthKits.add(new HealthKit(healthKitX, healthKitY, 200)); // Adjust speed as needed
         }
 
         // Rendering
@@ -144,26 +160,33 @@ public class gameScreen3 implements Screen {
             game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 70, 50);
         }
 
+        // Draw health kits
+        for (HealthKit healthKit : healthKits) {
+            game.batch.draw(healthKitTexture, healthKit.x, healthKit.y, 50, 50); // Adjust size as needed
+        }
 
         GlyphLayout scoreLayout = new GlyphLayout(sfont, "Score: " + score);
-        sfont.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 300, MyGdxGame.HEIGHT - 50);
+        GlyphLayout HealthLayout = new GlyphLayout(sfont, "Life: " + Math.ceil(health/10));
+        sfont.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 250, MyGdxGame.HEIGHT - 30);
+        sfont.draw(game.batch, HealthLayout, 10, MyGdxGame.HEIGHT - 30);
+
         game.batch.end();
     }
 
     private void checkCollisions() {
         // Create rectangles for the ship and enemies
-        Rectangle shipRect = new Rectangle(x, y, ship.getWidth()-50, ship.getHeight()-50);
+        Rectangle shipRect = new Rectangle(x, y, ship.getWidth() - 50, ship.getHeight() - 50);
 
         Iterator<Enemy> enemyIterator = enemies.iterator();
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
-            Rectangle enemyRect = new Rectangle(enemy.x, enemy.y, enemyTexture.getWidth()-500, enemyTexture.getHeight()-400);
+            Rectangle enemyRect = new Rectangle(enemy.x, enemy.y, enemyTexture.getWidth() - 500, enemyTexture.getHeight() - 400);
 
             // Check for collision between ship projectiles and enemies
             Iterator<Projectile> shipProjectileIterator = shipProjectiles.iterator();
             while (shipProjectileIterator.hasNext()) {
                 Projectile projectile = shipProjectileIterator.next();
-                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth()-100, projectileTexture.getHeight()-70);
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() - 100, projectileTexture.getHeight() - 70);
                 if (projectileRect.overlaps(enemyRect)) {
                     shipProjectileIterator.remove();
                     enemy.reset(); // Reset enemy position instead of removing
@@ -176,7 +199,7 @@ public class gameScreen3 implements Screen {
             Iterator<Projectile> enemyProjectileIterator = projectiles.iterator();
             while (enemyProjectileIterator.hasNext()) {
                 Projectile projectile = enemyProjectileIterator.next();
-                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth()-100, projectileTexture.getHeight()-70);
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() - 100, projectileTexture.getHeight() - 70);
                 if (projectileRect.overlaps(shipRect)) {
                     enemyProjectileIterator.remove();
                     health--;
@@ -187,26 +210,34 @@ public class gameScreen3 implements Screen {
                 }
             }
         }
+
+        // Check for collision between ship and health kits
+        Iterator<HealthKit> healthKitIterator = healthKits.iterator();
+        while (healthKitIterator.hasNext()) {
+            HealthKit healthKit = healthKitIterator.next();
+            Rectangle healthKitRect = new Rectangle(healthKit.x, healthKit.y, healthKitTexture.getWidth() - 30, healthKitTexture.getHeight() - 30); // Adjust size as needed
+            if (healthKitRect.overlaps(shipRect)) {
+                healthKitIterator.remove();
+                health += 10; // Increase health by 10
+                break;
+            }
+        }
     }
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
     public void pause() {
-
     }
 
     @Override
     public void resume() {
-
     }
 
     @Override
     public void hide() {
-
     }
 
     @Override
@@ -215,84 +246,6 @@ public class gameScreen3 implements Screen {
         ship.dispose();
         enemyTexture.dispose();
         projectileTexture.dispose();
-    }
-
-    // Enemy class definition
-    private static class Enemy {
-        float x, y;
-        float speed;
-        boolean canFire;
-        boolean hasFired;
-        float fireCooldown;
-        float fireRate = 1.5f; // Adjusted fire rate
-
-        Enemy(float x, float y, float speed) {
-            this.x = x;
-            this.y = y;
-            this.speed = speed;
-            this.canFire = false;
-            this.hasFired = false; // Track if the enemy has fired
-            this.fireCooldown = MathUtils.random(0.5f, 2.0f); // Initial random cooldown
-        }
-
-        void update(float delta) {
-            x -= speed * delta;
-            if (x + enemyTexture.getWidth() < 0) { // Check if off-screen
-                reset();
-            }
-
-            // Update firing cooldown
-            fireCooldown -= delta;
-            if (fireCooldown <= 0) {
-                canFire = true;
-                fireCooldown = fireRate; // Reset cooldown
-            }
-
-            if (canFire && !hasFired) {
-                fireProjectile();
-                canFire = false; // Only fire once per cooldown
-                hasFired = true; // Set hasFired to true after firing
-            }
-        }
-
-        void reset() {
-            x = MyGdxGame.WIDTH + MathUtils.random(200, 800); // Reset to right side
-            y = MathUtils.random(0, MyGdxGame.HEIGHT - enemyTexture.getHeight()); // Random Y position
-            fireCooldown = MathUtils.random(0.5f, 2.0f); // Reset cooldown
-            hasFired = false; // Reset the hasFired flag
-        }
-
-        void fireProjectile() {
-            projectiles.add(new Projectile(x, y));
-        }
-    }
-
-    // Projectile class definition
-    private static class Projectile {
-        float x, y;
-        float speed;
-        boolean fromShip;
-
-        Projectile(float x, float y, float speed) {
-            this.x = x;
-            this.y = y;
-            this.speed = speed; // Adjust speed as needed
-            this.fromShip = true; // Check if projectile is from ship
-        }
-
-        Projectile(float x, float y) {
-            this.x = x;
-            this.y = y;
-            this.speed = 400; // Adjust speed as needed
-            this.fromShip = false; // Check if projectile is from enemy
-        }
-
-        void update(float delta) {
-            if (fromShip) {
-                x += speed * delta; // Update projectile position for ship
-            } else {
-                x -= speed * delta; // Update projectile position for enemy
-            }
-        }
+        healthKitTexture.dispose(); // Dispose health kit texture
     }
 }

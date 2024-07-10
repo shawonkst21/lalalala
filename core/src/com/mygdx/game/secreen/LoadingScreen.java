@@ -46,7 +46,7 @@ public class LoadingScreen implements Screen {
         int percentage = (int) (loadingProgress * 100);
         if(percentage==100)
         {
-            game.setScreen(new gameScreen2(game));
+            game.setScreen(new gameScreen3(game));
         }
 
 
