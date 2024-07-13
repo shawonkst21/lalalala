@@ -19,6 +19,8 @@ public class Projectile {
         this.fromShip = false; // Check if projectile is from enemy
     }
 
+
+
     public void update(float delta) {
         if (fromShip) {
             x += speed * delta; // Update projectile position for ship

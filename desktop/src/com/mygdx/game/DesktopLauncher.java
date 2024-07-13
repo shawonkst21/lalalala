@@ -13,6 +13,5 @@ public class DesktopLauncher {
 		config.setWindowedMode(MyGdxGame.WIDTH, MyGdxGame.HEIGHT);
 		config.setResizable(false);
 		new Lwjgl3Application(new MyGdxGame(), config);
-
 	}
 }

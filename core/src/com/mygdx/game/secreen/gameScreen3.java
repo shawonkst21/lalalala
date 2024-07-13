@@ -23,8 +23,11 @@ public class gameScreen3 implements Screen {
     Texture img;
     Texture ship = new Texture("ship.png");
     static Texture enemyTexture = new Texture("alien.png");
+    static Texture projectileTextureShip = new Texture("fire2.png");
     static Texture projectileTexture = new Texture("fire.png");
-    Texture healthKitTexture = new Texture("dot.png"); // Load the texture for the health kit
+    static Texture projectileTextureEnemy = new Texture("bossFire.png");
+    Texture healthKitTexture = new Texture("healthkit.png"); // Load the texture for the health kit
+    Texture bossTexture = new Texture("222.png"); // Load the texture for the boss
 
     float bg_x1 = 0, bg_x2 = 1280;
     int bg_speed = 6; // Adjusted background speed
@@ -33,7 +36,10 @@ public class gameScreen3 implements Screen {
     ArrayList<Enemy> enemies;
     static ArrayList<Projectile> projectiles;
     static ArrayList<Projectile> shipProjectiles;
+    static ArrayList<Projectile> Bossprojectiles;
     ArrayList<HealthKit> healthKits = new ArrayList<>(); // List of health kits
+    Boss boss;
+    boolean bossActive = false;
 
     public gameScreen3(MyGdxGame game) {
         this.game = game;
@@ -53,6 +59,10 @@ public class gameScreen3 implements Screen {
         // Initialize projectiles lists
         projectiles = new ArrayList<>();
         shipProjectiles = new ArrayList<>();
+        Bossprojectiles=new ArrayList<>();
+
+        // Initialize boss
+        boss = new Boss(MyGdxGame.WIDTH + 50, MathUtils.random(0, MyGdxGame.HEIGHT - 100), 50, 30);
 
         // Load background texture
         img = new Texture("BG.jpg");
@@ -94,7 +104,7 @@ public class gameScreen3 implements Screen {
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.update(delta);
-            if (projectile.x + projectileTexture.getWidth() < 0) {
+            if (projectile.x + projectileTextureEnemy.getWidth() < 0) {
                 projectiles.remove(i);
             }
         }
@@ -117,6 +127,27 @@ public class gameScreen3 implements Screen {
             }
         }
 
+        // Check if score is a multiple of 20 and add boss
+        if (score % 2 == 0 && score != 0 && !bossActive) {
+            boss.reset();
+            bossActive = true;
+        }
+
+        // Update boss
+        if (bossActive) {
+            boss.update(delta, x, y);
+            if (boss.health <= 0) {
+                bossActive = false;
+            }
+        }
+        //boss
+        for (int i = Bossprojectiles.size() - 1; i >= 0; i--) {
+            Projectile projectile = Bossprojectiles.get(i);
+            projectile.update(delta);
+            if (projectile.x + projectileTexture.getWidth() < 0) {
+                Bossprojectiles.remove(i);
+            }
+        }
         // Check for collisions
         checkCollisions();
 
@@ -152,17 +183,28 @@ public class gameScreen3 implements Screen {
 
         // Draw enemy projectiles
         for (Projectile projectile : projectiles) {
-            game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 50, 30);
+            game.batch.draw(projectileTextureEnemy, projectile.x, projectile.y + 10, 40, 55);
         }
 
         // Draw ship projectiles
         for (Projectile projectile : shipProjectiles) {
-            game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 70, 50);
+            game.batch.draw(projectileTextureShip, projectile.x, projectile.y + 10, 70, 50);
         }
 
         // Draw health kits
         for (HealthKit healthKit : healthKits) {
-            game.batch.draw(healthKitTexture, healthKit.x, healthKit.y, 50, 50); // Adjust size as needed
+            game.batch.draw(healthKitTexture, healthKit.x, healthKit.y, 70, 50); // Adjust size as needed
+        }
+
+        // Draw boss
+        if (bossActive) {
+            game.batch.draw(bossTexture, boss.x, boss.y, 150, 150);
+            // Adjust size as neede
+           // System.out.println("koooo");
+        }
+        // Draw enemy projectiles
+        for (Projectile projectile : Bossprojectiles) {
+            game.batch.draw(projectileTexture, projectile.x, projectile.y + 10, 50, 30);
         }
 
         GlyphLayout scoreLayout = new GlyphLayout(sfont, "Score: " + score);
@@ -186,7 +228,7 @@ public class gameScreen3 implements Screen {
             Iterator<Projectile> shipProjectileIterator = shipProjectiles.iterator();
             while (shipProjectileIterator.hasNext()) {
                 Projectile projectile = shipProjectileIterator.next();
-                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() - 100, projectileTexture.getHeight() - 70);
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTextureShip.getWidth() - 100, projectileTextureShip.getHeight() - 70);
                 if (projectileRect.overlaps(enemyRect)) {
                     shipProjectileIterator.remove();
                     enemy.reset(); // Reset enemy position instead of removing
@@ -199,7 +241,7 @@ public class gameScreen3 implements Screen {
             Iterator<Projectile> enemyProjectileIterator = projectiles.iterator();
             while (enemyProjectileIterator.hasNext()) {
                 Projectile projectile = enemyProjectileIterator.next();
-                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() - 100, projectileTexture.getHeight() - 70);
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTextureEnemy.getWidth() - 100, projectileTextureEnemy.getHeight() - 70);
                 if (projectileRect.overlaps(shipRect)) {
                     enemyProjectileIterator.remove();
                     health--;
@@ -220,6 +262,25 @@ public class gameScreen3 implements Screen {
                 healthKitIterator.remove();
                 health += 10; // Increase health by 10
                 break;
+            }
+        }
+
+        // Check for collision between ship projectiles and boss
+        if (bossActive) {
+            Rectangle bossRect = new Rectangle(boss.x, boss.y, bossTexture.getWidth() , bossTexture.getHeight()); // Adjust size as needed
+            Iterator<Projectile> shipProjectileIterator = shipProjectiles.iterator();
+            while (shipProjectileIterator.hasNext()) {
+                Projectile projectile = shipProjectileIterator.next();
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() - 100, projectileTexture.getHeight() - 70);
+                if (projectileRect.overlaps(bossRect)) {
+                    shipProjectileIterator.remove();
+                    boss.health -= 10; // Decrease boss health
+                    if (boss.health <= 0) {
+                        bossActive = false;
+                        score += 5; // Reward player for defeating the boss
+                    }
+                    break;
+                }
             }
         }
     }
@@ -245,7 +306,8 @@ public class gameScreen3 implements Screen {
         img.dispose();
         ship.dispose();
         enemyTexture.dispose();
-        projectileTexture.dispose();
+        projectileTextureShip.dispose();
         healthKitTexture.dispose(); // Dispose health kit texture
+        bossTexture.dispose(); // Dispose boss texture
     }
 }
