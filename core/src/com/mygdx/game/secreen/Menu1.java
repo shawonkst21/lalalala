@@ -90,7 +90,7 @@ public class Menu1 implements Screen {
         if (isButton1) {
             game.batch.draw(inbutton1, button1X, button1Y, button1Width, button1Height); // Draw hover state texture
             if (Gdx.input.isTouched()) {
-                game.setScreen(new LoadingScreen(game));
+                game.setScreen(new GameMode(game));
             }
         } else {
             game.batch.draw(button1, button1X, button1Y, button1Width, button1Height); // Draw normal texture

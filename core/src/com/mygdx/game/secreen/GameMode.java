@@ -12,6 +12,7 @@ public class GameMode implements Screen {
     MyGdxGame game;
     Texture button1,button2,button3,button4;
     Texture img;
+    public static boolean check=true;
     public GameMode(MyGdxGame game)
     {
         this.game=game;
@@ -54,13 +55,15 @@ public class GameMode implements Screen {
         game.batch.draw(img,0,0);
         game.batch.draw(button1, button1X, button1Y, button1Width, button1Height);//button1
         game.batch.draw(button2, button2X, button2Y, button2Width, button2Height);//buttton2
-        boolean check=true;
+
         if(isButton1)
         {
             game.batch.draw(button3, button3X, button3Y, button3Width, button3Height);//buttton3
             if(Gdx.input.isTouched())
             {
-                game.setScreen(new gameScreen3(game));
+                check=true;
+                game.setScreen(new LoadingScreen(game));
+
             }
 
         }
@@ -69,7 +72,8 @@ public class GameMode implements Screen {
             game.batch.draw(button4, button4X, button4Y, button4Width, button4Height);//buttton4
             if(Gdx.input.isTouched())
             {
-                game.setScreen(new gameScreen2(game));
+                check=false;
+                game.setScreen(new LoadingScreen(game));
             }
         }
         game.batch.end();
