@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Sound.gameSound;
 
 public class About implements Screen {
     MyGdxGame game;
@@ -39,6 +40,8 @@ public class About implements Screen {
             game.batch.draw(back2, button5X, button5Y, button5Width, button5Height);// Draw hover state texture
             if(Gdx.input.isTouched())
             {
+                gameSound.buttonclick.play();
+                this.dispose();
                 game.setScreen(new Menu1(game));
 
             }
