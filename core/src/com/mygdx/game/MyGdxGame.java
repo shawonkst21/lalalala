@@ -1,10 +1,11 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.mygdx.game.secreen.*;
-
+import com.badlogic.gdx.audio.Music;
 
 public class MyGdxGame extends Game {
 	public SpriteBatch batch;
@@ -15,7 +16,7 @@ public class MyGdxGame extends Game {
 	@Override
 	public void create () {
         batch = new SpriteBatch();
-		this.setScreen(new GameMode(this));
+		this.setScreen(new Menu1(this));
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Sound.gameSound;
 
 public class GameMode implements Screen {
     MyGdxGame game;
@@ -61,6 +62,7 @@ public class GameMode implements Screen {
             game.batch.draw(button3, button3X, button3Y, button3Width, button3Height);//buttton3
             if(Gdx.input.isTouched())
             {
+
                 check=true;
                 game.setScreen(new LoadingScreen(game));
 

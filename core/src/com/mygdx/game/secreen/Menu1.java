@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Sound.gameSound;
 
 public class Menu1 implements Screen {
     MyGdxGame game;
@@ -90,6 +91,8 @@ public class Menu1 implements Screen {
         if (isButton1) {
             game.batch.draw(inbutton1, button1X, button1Y, button1Width, button1Height); // Draw hover state texture
             if (Gdx.input.isTouched()) {
+                gameSound.buttonclick.play();
+                this.dispose();
                 game.setScreen(new GameMode(game));
             }
         } else {
@@ -105,6 +108,8 @@ public class Menu1 implements Screen {
         if (isButton3) {
             game.batch.draw(about2, button3X, button3Y + 1, button3Width, button3Height); // Draw hover state texture
             if (Gdx.input.isTouched()) {
+                gameSound.buttonclick.play();
+                this.dispose();
                 game.setScreen(new About(game));
             }
         } else {
@@ -114,6 +119,8 @@ public class Menu1 implements Screen {
         if (isButton4) {
             game.batch.draw(ins2, 8, 15, 210, 41); // Draw hover state texture
             if (Gdx.input.isTouched()) {
+                gameSound.buttonclick.play();
+                this.dispose();
                 game.setScreen(new Instruction(game));
             }
         } else {
