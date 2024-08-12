@@ -8,7 +8,7 @@ import static com.mygdx.game.secreen.gameScreen2.Bossprojectiles;
 public class Boss2 {
     float x, y;
     float speed;
-    int health;
+    public int health;
     private float fireRate = 1.0f; // Boss fires every 1 second
     private float timeSinceLastFire = 0;
 

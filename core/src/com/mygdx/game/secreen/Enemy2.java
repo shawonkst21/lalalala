@@ -7,7 +7,8 @@ import static com.mygdx.game.secreen.gameScreen2.enemyTexture;
 import static com.mygdx.game.secreen.gameScreen2.projectiles;
 
 public class Enemy2 {
-    float x, y;
+   public  float x;
+    public float y;
     float speed;
     boolean canFire;
     boolean hasFired;

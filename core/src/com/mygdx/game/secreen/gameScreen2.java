@@ -15,8 +15,10 @@ import com.mygdx.game.Sound.gameSound;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import static java.lang.Math.min;
+
 public class gameScreen2 implements Screen {
-    public static BitmapFont sfont;
+    public static BitmapFont sfont,sfont2;
     private ShapeRenderer shapeRenderer;
     private final float maxHealth = 30;  // Maximum health of the ship
 
@@ -32,7 +34,7 @@ public class gameScreen2 implements Screen {
     static Texture projectileTexture = new Texture("hi.png");
     static Texture projectileTextureEnemy = new Texture("Screen2/alienFire.png");
     Texture healthKitTexture = new Texture("healthkit.png"); // Load the texture for the health kit
-    Texture bossTexture = new Texture("Screen2/Boss.png"); // Load the texture for the boss
+    public static Texture bossTexture = new Texture("Screen2/Boss.png"); // Load the texture for the boss
 
     float bg_y1 = 0, bg_y2;
     int bg_speed = 4; // Adjusted background speed
@@ -44,7 +46,7 @@ public class gameScreen2 implements Screen {
     static ArrayList<Projectile2> Bossprojectiles;
     ArrayList<HealthKit2> healthKits = new ArrayList<>(); // List of health kits
     ArrayList<Explosion>explosions=new ArrayList<>();
-    Boss2 boss;
+   public static Boss2 boss;
     boolean bossActive = false;
 
     public gameScreen2(MyGdxGame game) {
@@ -75,7 +77,9 @@ public class gameScreen2 implements Screen {
         img = new Texture("bg2.jpg");
         bg_y2 = img.getHeight(); // Initialize bg_y2 to the height of the image
         sfont = new BitmapFont(Gdx.files.internal("font/score.fnt")); // Initialize the font with the correct path
-        sfont.getData().setScale(.8f);
+        sfont.getData().setScale(.55f);
+        sfont2 = new BitmapFont(Gdx.files.internal("font/score.fnt")); // Initialize the font with the correct path
+        sfont2.getData().setScale(.8f);
     }
 
     @Override
@@ -223,14 +227,26 @@ public class gameScreen2 implements Screen {
         for (Explosion explosion : explosions) {
             explosion.render(game.batch);
         }
-
-
-        GlyphLayout scoreLayout = new GlyphLayout(sfont, "Score: " + score);
-        GlyphLayout healthLayout = new GlyphLayout(sfont, "Life: " + Math.ceil(health / 10.0));
-        sfont.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 250, MyGdxGame.HEIGHT - 30);
-        sfont.draw(game.batch, healthLayout, 10, MyGdxGame.HEIGHT - 30);
-
-
+        game.batch.end();
+        // Draw the health bar
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        float healthBarWidth = 180;
+        float healthBarHeight = 10;
+        float healthPercentage = health / maxHealth;
+        float currentHealthBarWidth = healthBarWidth * healthPercentage;
+        float healthBarX = x + ship.getWidth() / 2f - healthBarWidth / 2f;
+        float healthBarY = y + ship.getHeight() + 10;
+        shapeRenderer.setColor(1, 0, 0, 1); // Red color
+        shapeRenderer.rect(95, 690, healthBarWidth, healthBarHeight);
+        shapeRenderer.setColor(0, 1, 0, 1); // Green color
+        shapeRenderer.rect(95, 690, currentHealthBarWidth, healthBarHeight);
+        shapeRenderer.end();
+      //  Bar.HealthbarEnemy();
+        game.batch.begin();
+        GlyphLayout scoreLayout = new GlyphLayout(sfont2, "Score: " + score);
+        GlyphLayout healthLayout = new GlyphLayout(sfont, "Life:" );
+        sfont2.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 250, MyGdxGame.HEIGHT - 20);
+        sfont.draw(game.batch, healthLayout, 10, MyGdxGame.HEIGHT - 20);
         game.batch.end();
     }
 
@@ -283,7 +299,9 @@ public class gameScreen2 implements Screen {
             Rectangle healthKitRect = new Rectangle(healthKit.x, healthKit.y, healthKitTexture.getWidth() - 30, healthKitTexture.getHeight() - 30); // Adjust size as needed
             if (healthKitRect.overlaps(shipRect)) {
                 healthKitIterator.remove();
-                health += 10; // Increase health by 10
+                health += 5;
+                health=min(30,health);
+
                 break;
             }
         }
@@ -316,7 +334,7 @@ public class gameScreen2 implements Screen {
                     if (!gameSound.explosion.isPlaying()){
                         gameSound.explosion.play();
                     }
-                    health--;
+                    health-=5;
                     if (health <= 0) {
                         // Handle game over (e.g., restart the game or show game over screen)
                     }
@@ -325,28 +343,7 @@ public class gameScreen2 implements Screen {
             }
         }
     }
-    private void drawHealthBar() {
-        float healthBarWidth = 200; // Maximum width of the health bar
-        float healthBarHeight = 20; // Height of the health bar
-        float healthPercentage = health / maxHealth; // Calculate health as a percentage
-        float currentHealthBarWidth = healthBarWidth * healthPercentage;
 
-        // Position the health bar above the ship
-        float healthBarX = x + ship.getWidth() / 2f - healthBarWidth / 2f; // Centered above the ship
-        float healthBarY = y + ship.getHeight() + 10; // 10 pixels above the ship
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Draw the background of the health bar (red)
-        shapeRenderer.setColor(1, 0, 0, 1); // Red color
-        shapeRenderer.rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
-
-        // Draw the current health bar (green)
-        shapeRenderer.setColor(0, 1, 0, 1); // Green color
-        shapeRenderer.rect(healthBarX, healthBarY, currentHealthBarWidth, healthBarHeight);
-
-        shapeRenderer.end();
-    }
 
     @Override
     public void resize(int width, int height) {
