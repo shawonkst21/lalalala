@@ -6,8 +6,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.secreen.FirstScreen;
 
 public class IntroScreen implements Screen {
     MyGdxGame game;
@@ -18,52 +18,58 @@ public class IntroScreen implements Screen {
 
     public IntroScreen(MyGdxGame game) {
         this.game = game;
-        introSS = new Texture("intro.png");
 
-        // Adjust frame size to fit the texture
-        TextureRegion[][] tmpFrames = TextureRegion.split(introSS, 300, 380);
-        int frameRows = introSS.getHeight() / 380; // 10 rows
-        int frameCols = introSS.getWidth() / 300;  // 10 columns
-        introFrames = new TextureRegion[frameRows * frameCols];
+        // Load the sprite sheet
+        introSS = new Texture(Gdx.files.internal("i_want_this_type_video_that_fighter_ship_entry_52e86f-ezgif.com-gif-to-sprite-converter.png"));
 
+        // Split the sprite sheet into 8x8 frames (375x415 each)
+        TextureRegion[][] tmpFrames = TextureRegion.split(introSS, 375, 415);
+
+        // We have 64 frames in total (8x8)
+        introFrames = new TextureRegion[64];
         int index = 0;
-        for (int i = 0; i < frameRows; i++) {
-            for (int j = 0; j < frameCols; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 introFrames[index++] = tmpFrames[i][j];
             }
         }
+
+        // Create the animation object
         animation = new Animation<>(0.05f, introFrames);
     }
 
     @Override
     public void show() {
-        elapsedTime = 0f; // Reset elapsed time
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1); // Clear the screen with black color
-        elapsedTime += delta; // Update elapsed time with delta
-
+        elapsedTime += Gdx.graphics.getDeltaTime();
         game.batch.begin();
+
+        // Draw the current frame of the animation
         game.batch.draw(animation.getKeyFrame(elapsedTime, false), 0, 0, 1280, 720);
-        game.batch.end();
 
-        // Print debug information
-        System.out.println("Mouse X: " + Gdx.input.getX() + " Mouse Y: " + Gdx.input.getY());
+        // Skip button logic
+        int mouseX = Gdx.input.getX();
+        int mouseY = Gdx.graphics.getHeight() - Gdx.input.getY(); // Flip Y-coordinate
 
-        if (Gdx.input.getX() >= 1005 && Gdx.input.getX() <= 1260 && Gdx.input.getY() >= 10 && Gdx.input.getY() <= 63) {
+        if (mouseX >= 1005 && mouseX <= 1260 && mouseY >= 10 && mouseY <= 63) {
             if (Gdx.input.isTouched()) {
                 game.setScreen(new FirstScreen(game));
                 this.dispose();
             }
         }
+
+        // Animation finish logic
         if (animation.isAnimationFinished(elapsedTime)) {
             if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY) || Gdx.input.isTouched()) {
                 game.setScreen(new FirstScreen(game));
                 this.dispose();
             }
         }
+
+        game.batch.end();
     }
 
     @Override
@@ -80,6 +86,6 @@ public class IntroScreen implements Screen {
 
     @Override
     public void dispose() {
-        introSS.dispose();
+        introSS.dispose();  // Dispose the sprite sheet texture when done
     }
 }

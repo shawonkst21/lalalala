@@ -6,15 +6,20 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.MyGdxGame;
+import com.mygdx.game.Sound.gameSound;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class gameScreen2 implements Screen {
     public static BitmapFont sfont;
+    private ShapeRenderer shapeRenderer;
+    private final float maxHealth = 30;  // Maximum health of the ship
+
 
     MyGdxGame game;
     float x, y;
@@ -38,6 +43,7 @@ public class gameScreen2 implements Screen {
     static ArrayList<Projectile2>shipProjectiles;
     static ArrayList<Projectile2> Bossprojectiles;
     ArrayList<HealthKit2> healthKits = new ArrayList<>(); // List of health kits
+    ArrayList<Explosion>explosions=new ArrayList<>();
     Boss2 boss;
     boolean bossActive = false;
 
@@ -47,6 +53,7 @@ public class gameScreen2 implements Screen {
         y = 0;
         score = 0;
         health = 30; // Starting health
+        shapeRenderer = new ShapeRenderer();
 
         // Initialize enemies
         enemies = new ArrayList<>();
@@ -145,7 +152,15 @@ public class gameScreen2 implements Screen {
                 Bossprojectiles.remove(i);
             }
         }
-
+        // Update explosions
+        Iterator<Explosion> explosionIterator = explosions.iterator();
+        while (explosionIterator.hasNext()) {
+            Explosion explosion = explosionIterator.next();
+            explosion.update(delta);
+            if (explosion.remove) {
+                explosionIterator.remove();
+            }
+        }
         // Check for collisions
         checkCollisions();
 
@@ -204,11 +219,17 @@ public class gameScreen2 implements Screen {
         for (Projectile2 projectile : Bossprojectiles) {
             game.batch.draw(projectileTexture, projectile.x + 10, projectile.y, 20, 20);
         }
+        //explosion
+        for (Explosion explosion : explosions) {
+            explosion.render(game.batch);
+        }
+
 
         GlyphLayout scoreLayout = new GlyphLayout(sfont, "Score: " + score);
         GlyphLayout healthLayout = new GlyphLayout(sfont, "Life: " + Math.ceil(health / 10.0));
         sfont.draw(game.batch, scoreLayout, MyGdxGame.WIDTH - 250, MyGdxGame.HEIGHT - 30);
         sfont.draw(game.batch, healthLayout, 10, MyGdxGame.HEIGHT - 30);
+
 
         game.batch.end();
     }
@@ -220,7 +241,7 @@ public class gameScreen2 implements Screen {
         Iterator<Enemy2> enemyIterator = enemies.iterator();
         while (enemyIterator.hasNext()) {
             Enemy2 enemy = enemyIterator.next();
-            Rectangle enemyRect = new Rectangle(enemy.x, enemy.y, enemyTexture.getWidth() - 500, enemyTexture.getHeight() - 400);
+            Rectangle enemyRect = new Rectangle(enemy.x, enemy.y, enemyTexture.getWidth() - 600, enemyTexture.getHeight() - 400);
 
             // Check for collision between ship projectiles and enemies
             Iterator<Projectile2> shipProjectileIterator = shipProjectiles.iterator();
@@ -242,6 +263,10 @@ public class gameScreen2 implements Screen {
                 Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTextureEnemy.getWidth() - 200, projectileTextureEnemy.getHeight() - 170);
                 if (projectileRect.overlaps(shipRect)) {
                     enemyProjectileIterator.remove();
+                    explosions.add(new Explosion(projectile.x, projectile.y));
+                    if (!gameSound.explosion.isPlaying()){
+                        gameSound.explosion.play();
+                    }
                     health--;
                     if (health <= 0) {
                         // Handle game over (e.g., restart the game or show game over screen)
@@ -280,7 +305,47 @@ public class gameScreen2 implements Screen {
                     break;
                 }
             }
+            // Check for collision between boss projectiles and the ship
+            Iterator<Projectile2> bossProjectileIterator =Bossprojectiles.iterator();
+            while (bossProjectileIterator.hasNext()) {
+                Projectile2 projectile = bossProjectileIterator.next();
+                Rectangle projectileRect = new Rectangle(projectile.x, projectile.y, projectileTexture.getWidth() , projectileTexture.getHeight() );
+                if (projectileRect.overlaps(shipRect)) {
+                    bossProjectileIterator.remove();
+                    explosions.add(new Explosion(projectile.x, projectile.y));
+                    if (!gameSound.explosion.isPlaying()){
+                        gameSound.explosion.play();
+                    }
+                    health--;
+                    if (health <= 0) {
+                        // Handle game over (e.g., restart the game or show game over screen)
+                    }
+                    break;
+                }
+            }
         }
+    }
+    private void drawHealthBar() {
+        float healthBarWidth = 200; // Maximum width of the health bar
+        float healthBarHeight = 20; // Height of the health bar
+        float healthPercentage = health / maxHealth; // Calculate health as a percentage
+        float currentHealthBarWidth = healthBarWidth * healthPercentage;
+
+        // Position the health bar above the ship
+        float healthBarX = x + ship.getWidth() / 2f - healthBarWidth / 2f; // Centered above the ship
+        float healthBarY = y + ship.getHeight() + 10; // 10 pixels above the ship
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Draw the background of the health bar (red)
+        shapeRenderer.setColor(1, 0, 0, 1); // Red color
+        shapeRenderer.rect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+        // Draw the current health bar (green)
+        shapeRenderer.setColor(0, 1, 0, 1); // Green color
+        shapeRenderer.rect(healthBarX, healthBarY, currentHealthBarWidth, healthBarHeight);
+
+        shapeRenderer.end();
     }
 
     @Override
