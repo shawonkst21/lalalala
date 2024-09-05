@@ -56,7 +56,8 @@ public class gameScreen2 implements Screen {
         score = 0;
         health = 30; // Starting health
         shapeRenderer = new ShapeRenderer();
-
+        gameSound.theme.setLooping(true);
+        gameSound.theme.play();
         // Initialize enemies
         enemies = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -217,6 +218,7 @@ public class gameScreen2 implements Screen {
         // Draw boss
         if (bossActive) {
             game.batch.draw(bossTexture, boss.x, boss.y, 200, 180); // Adjust size as needed
+
         }
 
         // Draw boss projectiles
@@ -237,11 +239,26 @@ public class gameScreen2 implements Screen {
         float healthBarX = x + ship.getWidth() / 2f - healthBarWidth / 2f;
         float healthBarY = y + ship.getHeight() + 10;
         shapeRenderer.setColor(1, 0, 0, 1); // Red color
-        shapeRenderer.rect(95, 690, healthBarWidth, healthBarHeight);
+        shapeRenderer.rect(97, 690, healthBarWidth, healthBarHeight);
         shapeRenderer.setColor(0, 1, 0, 1); // Green color
-        shapeRenderer.rect(95, 690, currentHealthBarWidth, healthBarHeight);
+        shapeRenderer.rect(97, 690, currentHealthBarWidth, healthBarHeight);
         shapeRenderer.end();
-      //  Bar.HealthbarEnemy();
+        if(bossActive)
+        {
+            float bossHealthBarWidth = 100;
+            float bossHealthBarHeight = 10;
+            float bossHealthPercentage = boss.health / 30f; // Assuming 30 is the max health of the boss
+            float currentBossHealthBarWidth = bossHealthBarWidth * bossHealthPercentage;
+            float bossHealthBarX = boss.x + 200/ 2f -50;
+            float bossHealthBarY = boss.y + 150; // Position above the boss
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1, 0, 0, 1); // Red color for background
+            shapeRenderer.rect(bossHealthBarX, bossHealthBarY, bossHealthBarWidth, bossHealthBarHeight);
+            shapeRenderer.setColor(0, 1, 0, 1); // Green color for health
+            shapeRenderer.rect(bossHealthBarX, bossHealthBarY, currentBossHealthBarWidth, bossHealthBarHeight);
+            shapeRenderer.end();
+        }
         game.batch.begin();
         GlyphLayout scoreLayout = new GlyphLayout(sfont2, "Score: " + score);
         GlyphLayout healthLayout = new GlyphLayout(sfont, "Life:" );
@@ -285,7 +302,9 @@ public class gameScreen2 implements Screen {
                     }
                     health--;
                     if (health <= 0) {
-                        // Handle game over (e.g., restart the game or show game over screen)
+                        this.dispose();
+                        game.setScreen(new GameOver(game,score));
+                        gameSound.theme.stop();
                     }
                     break;
                 }
@@ -336,7 +355,9 @@ public class gameScreen2 implements Screen {
                     }
                     health-=5;
                     if (health <= 0) {
-                        // Handle game over (e.g., restart the game or show game over screen)
+                        this.dispose();
+                        game.setScreen(new GameOver(game,score));
+                        gameSound.theme.stop();
                     }
                     break;
                 }
